@@ -6,14 +6,18 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'fire
 import { auth } from './firebase';
 import { Link } from 'react-router-dom'; // Import Link from React Router
 import bodyImage from './assets/images/backs.jpg';
+import { useNavigate } from 'react-router-dom';
 
 
-function App() {
+
+function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
@@ -28,6 +32,7 @@ function App() {
 
       await signInWithEmailAndPassword(auth, email, password);
       // Handle successful login (navigate to dashboard or show success message)
+      navigate('/home');
     } catch (error) {
       console.error('Login error:', error.message);
       setError('Invalid email or password. Please try again.');
@@ -48,9 +53,9 @@ function App() {
         <h3 className="mb-1">Employee Login</h3>
         <label className="account-label">
           Don't have an account yet?{' '}
-          <button class="sign">
+          <Link to="/signup" class="sign">
             Sign Up.
-            </button>
+            </Link>
         </label>
         <form>
           <div className="mb-3">
@@ -125,4 +130,4 @@ function App() {
   );
 }
 
-export default App;
+export default Login;
