@@ -1,22 +1,33 @@
-
-import React from 'react';
-import SideNavigation from '../components/UI/SideNavigation';
-import Profile from '../components/UI/Profile';
+import React, { Fragment } from "react";
+import { Card, Typography, Box } from "@mui/material";
+import SideNavigation from "../components/UI/SideNavigation";
+import team from "../assets/teams.jpg"
 
 const Home = () => {
-  // const userEmail = 'employee@example.com'; // Replace with actual email
-
   return (
-    <div className="welcome-home">
-       <SideNavigation />
-      <div className="text-center">
-       
-        {/* <Profile email={userEmail} /> */}
-        {/* Your main content goes here */}
-        <h2>Welcome to the Employee System</h2>
-        <p>This is your home interface.</p>
-      </div>
-    </div>
+    <Fragment>
+      <SideNavigation />
+
+      <Card className="welcome-card">
+        <Box p={4}>
+          <Typography variant="h4" textAlign="center">
+            Welcome to the Employee Portal
+          </Typography>
+
+          <Typography textAlign="center" mt={2}>
+            This is your home base for managing employee information and tasks.<br/> Use the navigation on the left to get started.
+          </Typography>
+        </Box>
+
+        <Box display="flex" justifyContent="center" p={2}>
+          <img 
+            alt="people collaborating"
+            src={team}
+            width={400}
+          />  
+        </Box>
+      </Card>
+    </Fragment>
   );
 };
 

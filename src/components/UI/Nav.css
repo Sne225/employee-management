@@ -66,6 +66,14 @@
   .app-bar .MuiIconButton-root {
     margin-right: 16px;
   }
+
+  .logo {
+    max-width: 100%;
+    height: auto;
+    margin: 10px;
+    margin-bottom: 30px;
+    margin-top:30% /* Adjust the margin as needed for spacing around the logo */
+  }
   
   /* Adjustments for smaller screens */
   @media (max-width: 600px) {
@@ -77,4 +85,5 @@
       margin-left: 0;
     }
   }
+
   

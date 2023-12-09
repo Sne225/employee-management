@@ -213,12 +213,12 @@ function CreateAccount() {
       const user = auth.currentUser;
       const uid = user.uid;
 
-      // Add user data to Firestore
       //const userRef = addDoc(collection(firestore, 'users');
       const userRef = doc(firestore, 'employees', uid);
       await setDoc(userRef, {
         name,
         surname,
+        email,
         birthDate,
         employeeNumber,
         salary,
