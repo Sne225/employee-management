@@ -1,11 +1,21 @@
-// src/components/Home.js
+
 import React from 'react';
+import SideNavigation from '../components/UI/SideNavigation';
+import Profile from '../components/UI/Profile';
 
 const Home = () => {
+  // const userEmail = 'employee@example.com'; // Replace with actual email
+
   return (
-    <div>
-      <h1>Welcome to the Employee System</h1>
-      <p>This is a simple employee management system.</p>
+    <div className="welcome-home">
+       <SideNavigation />
+      <div className="text-center">
+       
+        {/* <Profile email={userEmail} /> */}
+        {/* Your main content goes here */}
+        <h2>Welcome to the Employee System</h2>
+        <p>This is your home interface.</p>
+      </div>
     </div>
   );
 };
