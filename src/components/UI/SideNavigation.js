@@ -29,14 +29,13 @@ const navItems = [
     { label: 'Employees', icon: <FaUsers color='white'/>, path: '/list' },
     { label: 'Notifications', icon: <FaBell color='white'/>, path: '#' },
     { label: 'Reports', icon: <FaChartBar color='white'/>, path: '#' },
-    { label: 'Operations', icon: <FaCodeBranch color='white'/>, path: '#' },
+    { label: 'Employee Hierachy', icon: <FaCodeBranch color='white'/>, path: '#' },
 ];
 
 const SideNavigation = () => {
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(true);
     const location = useLocation();
-    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
 
@@ -69,9 +68,21 @@ const SideNavigation = () => {
         setIsOpen(false);
     }, [location.pathname]);
 
+    const handleSignOut = async () => {
+        try {
+          await auth.signOut();
+          // Redirect to the home page after signing out
+          navigate('/');
+        } catch (error) {
+          console.error('Error signing out:', error);
+        }
+      };
+      
+
 
     return (
         <div>
+            
             <AppBar position="fixed" className="app-bar">
                 <Toolbar>
                     <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleSideNav}>
@@ -115,7 +126,7 @@ const SideNavigation = () => {
                             </ListItemIcon>
                             <ListItemText primary="Settings" />
                         </ListItem>
-                        <ListItem button component={RouterLink} to="/">
+                        <ListItem button onClick={handleSignOut}>
                             <ListItemIcon className="icon">
                                 <FaSignOutAlt color='white'/>
                             </ListItemIcon>

@@ -18,11 +18,13 @@ code {
 }
 
 .spinner {
+  margin-top: 50%;
   border: 4px solid rgba(0, 0, 0, 0.1);
   border-top: 4px solid #3498db;
   border-radius: 50%;
   width: 30px;
   height: 30px;
-  animation: spin 1s linear infinite;
+  animation: spin 12s linear infinite;
   margin: 0 auto; /* Center the spinner */
+  
 }

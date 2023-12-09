@@ -14,6 +14,7 @@ const Profile = () => {
     useEffect(() => {
         const getUserData = async () => {
             try {
+                setLoading(true);
                 const user = auth.currentUser;
 
                 if (user) {
@@ -43,14 +44,10 @@ const Profile = () => {
 
     return (
         <div className="profile">
-            {loading ? (
-                <div className="spinner"></div>
-            ) : (
                 <div className="profile-info">
                     <Gravatar style={{ borderRadius: '20px' }} email={email} size={35} className="avatar" />
                     <div className="email">{name}</div>
                 </div>
-            )}
         </div>
     );
 };
