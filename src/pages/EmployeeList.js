@@ -1,10 +1,38 @@
 // src/components/EmployeeList.js
 import React, { useEffect, useState } from 'react';
-import { firestore } from '../firebase';
-import { Grid, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import {
+  Grid,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Card,
+  Box,
+} from '@mui/material';
+import { styled } from '@mui/system';
 import EmployeeCard from '../components/UI/EmployeeCard';
 import SideNavigation from '../components/UI/SideNavigation';
+import { getDocs, collection } from 'firebase/firestore';
+import { firestore } from '../firebase'; // assuming you've exported your initialized firestore instance as 'db'
 
+const RootContainer = styled('div')({
+  padding: (theme) => theme.spacing(2),
+});
+
+const Title = styled(Typography)({
+  textAlign: 'center',
+  margin: (theme) => theme.spacing(2),
+});
+
+const CreateButton = styled(Button)({
+  marginBottom: (theme) => theme.spacing(2),
+});
 
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
@@ -13,8 +41,9 @@ const EmployeeList = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const employeesCollection = await firestore.collection('employees').get();
-        const employeeData = employeesCollection.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const employeesCollection = collection(firestore, 'employees');
+        const employeesSnapshot = await getDocs(employeesCollection);
+        const employeeData = employeesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setEmployees(employeeData);
       } catch (error) {
         console.error('Error fetching employees:', error);
@@ -25,51 +54,75 @@ const EmployeeList = () => {
   }, []);
 
   const handleEdit = (id) => {
-    // Implement edit logic (e.g., navigate to edit page)
     console.log(`Edit employee with ID: ${id}`);
   };
 
   const handleDelete = (id) => {
-    // Implement delete logic
     console.log(`Delete employee with ID: ${id}`);
   };
 
   const handleCreate = () => {
-    // Implement create logic (e.g., navigate to create page)
-    console.log('Create new employee');
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
+  const handleCreateEmployee = () => {
+    // Add logic to create a new employee
+    // You can access form data here and perform necessary actions
+
+    // After creating the employee, you may want to refetch the employee list
+    // to include the newly created employee
+    // fetchEmployees();
+
+    // Close the dialog
+    setOpenDialog(false);
   };
 
   return (
-    <div>
-      <SideNavigation/>
-      <h2 className="text-center">Employee List</h2>
-      <Button variant="contained" color="primary" onClick={() => setOpenDialog(true)}>
+    <RootContainer>
+      <SideNavigation />
+      <Card className="welcome-card">
+        <Box p={4}>
+          <Typography variant="h4" textAlign="center">
+            Employee Portal
+          </Typography>
+          <Typography textAlign="center" mt={2}>
+            Employee List
+          </Typography>
+        </Box>
+      </Card>
+      <CreateButton variant="contained" color="primary" onClick={handleCreate}>
         Create
-      </Button>
+      </CreateButton>
 
-      <Grid container spacing={2}>
+      <List>
         {employees.map((employee) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={employee.id}>
-            <EmployeeCard employee={employee} onEdit={() => handleEdit(employee.id)} onDelete={() => handleDelete(employee.id)} />
-          </Grid>
+          <ListItem key={employee.id}>
+            <ListItemText primary={`${employee.name} - ${employee.email}`} />
+            <Button onClick={() => handleEdit(employee.id)}>Edit</Button>
+            <Button onClick={() => handleDelete(employee.id)}>Delete</Button>
+          </ListItem>
         ))}
-      </Grid>
+      </List>
 
       {/* Dialog for Create */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Create Employee</DialogTitle>
         <DialogContent>
           {/* Add your form or input fields for creating a new employee */}
-          {/* Example: <TextField label="First Name" /> */}
+          {/* Example: <TextField label="First Name" fullWidth /> */}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button color="primary" onClick={handleCreate}>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button color="primary" onClick={handleCreateEmployee}>
             Create
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </RootContainer>
   );
 };
 

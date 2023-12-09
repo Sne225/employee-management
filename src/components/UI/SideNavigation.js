@@ -138,7 +138,7 @@ const SideNavigation = () => {
 
             {/* Add content container to prevent content from being hidden behind the app bar */}
             <div className="content-container">
-                <Typography variant="h4">Welcome to the Employee System</Typography>
+                <Typography variant="h4">.</Typography>
                 {/* Your main content goes here */}
             </div>
         </div>
