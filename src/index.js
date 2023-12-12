@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-import reportWebVitals from './reportWebVitals';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import SignUp from './pages/SignUp';
 import Home from './pages/Home';
 import List from './pages/EmployeeList';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
-import { SnackbarProvider } from 'notistack';
 
 
 const PrivateRoute = ({ element }) => {
@@ -34,7 +32,7 @@ const PrivateRoute = ({ element }) => {
     return <div className='spinner mt-5'></div>;
   }
 
-  return authenticated ? element : <Navigate to="/login" />;
+  return authenticated ? element : <Navigate to="/" />;
 };
 
 const routes = [
@@ -53,4 +51,3 @@ root.render(
   </React.StrictMode>
 );
 
-reportWebVitals();
