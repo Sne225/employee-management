@@ -34,7 +34,7 @@ const PrivateRoute = ({ element }) => {
     return <div className='spinner mt-5'></div>;
   }
 
-  return authenticated ? element : <Navigate to="/" />;
+  return authenticated ? element : <Navigate to="/login" />;
 };
 
 const routes = [
@@ -48,11 +48,9 @@ const router = createBrowserRouter(routes);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <SnackbarProvider maxSnack={3}>
   <React.StrictMode>
     <RouterProvider router={router} />
   </React.StrictMode>
-  </SnackbarProvider>
 );
 
 reportWebVitals();

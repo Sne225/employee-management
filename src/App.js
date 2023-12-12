@@ -47,7 +47,7 @@ function Login() {
 
   return (
     <div className="container mt-5">
-    <img src={bodyImage} alt="Background Wall" className="Background Image" />
+    <img src={bodyImage} alt="Background Wall" className="body-image" />
 
       <div className="card p-5">
         <h3 className="mb-1">Employee Login</h3>
