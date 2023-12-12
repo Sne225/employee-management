@@ -11,7 +11,7 @@ For the project, these are the following tools used:
 - Expo CLI (and Expo Packages)
 - Git (Version Control)
 - Bootstrap / CSS / HTML
-- MUI API
+- MUI and Gravatar API
 
 # Features
 The application has the following features:
