@@ -9,6 +9,8 @@ import Home from './pages/Home';
 import List from './pages/EmployeeList';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
+import { SnackbarProvider } from 'notistack';
+
 
 const PrivateRoute = ({ element }) => {
   const [loading, setLoading] = useState(true);
@@ -46,9 +48,11 @@ const router = createBrowserRouter(routes);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
+  <SnackbarProvider maxSnack={3}>
   <React.StrictMode>
     <RouterProvider router={router} />
   </React.StrictMode>
+  </SnackbarProvider>
 );
 
 reportWebVitals();

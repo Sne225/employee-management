@@ -28,7 +28,7 @@ import { getDocs, collection, addDoc, query, where, orderBy, deleteDoc, doc, upd
 import { firestore } from '../firebase';
 import SideNavigation from "../components/UI/SideNavigation";
 import ClearFiltersButton from '../components/UI/ClearFiltersButton';
-
+import { debounce } from 'lodash';
 
 
 const theme = createTheme();
@@ -58,6 +58,8 @@ const LoadingContainer = styled(Box)({
   alignItems: 'center',
   height: '100vh',
 });
+
+
 
 
 const EmployeeCard = ({ employee, onClose }) => {
@@ -172,8 +174,9 @@ const EmployeeList = () => {
       let employeesQuery = query(employeesCollection);
 
       if (searchQuery) {
-        employeesQuery = query(employeesCollection, where('name', '>=', searchQuery));
+        employeesQuery = query(employeesCollection, where('name', '==', searchQuery));
       }
+      
 
       if (filterRole) {
         employeesQuery = query(employeesCollection, where('role', '==', filterRole));
@@ -200,6 +203,19 @@ const EmployeeList = () => {
     setSortColumn('');
     setSortDirection('asc');
   };
+
+  const clearForm = () => {
+    setFormData({
+      name: '',
+      surname: '',
+      email: '',
+      birthDate: '',
+      employeeNumber: '',
+      salary: '',
+      role: '',
+      manager: '',
+    });
+  };
   
   const handleEdit = (employee) => {
     setEditableEmployee(employee);
@@ -210,7 +226,6 @@ const EmployeeList = () => {
     try {
       setLoading(true);
   
-      // Update the employee with the edited data
       await updateDoc(doc(firestore, 'employees', editableEmployee.id), {
         name: formData.name,
         surname: formData.surname,
@@ -222,12 +237,11 @@ const EmployeeList = () => {
         manager: formData.manager,
       });
   
-      // After successful update, refresh the employee list
       fetchEmployees();
   
-      // Show snackbar alert
       setSnackbarMessage('Employee updated successfully');
       setSnackbarOpen(true);
+      clearForm();
   
     } catch (error) {
       console.error('Error updating employee:', error);
@@ -237,6 +251,13 @@ const EmployeeList = () => {
       setLoading(false);
     }
   };
+
+  const debouncedSearch = useCallback(
+    debounce((value) => {
+      setSearchQuery(value);
+    }, 300),
+    []
+  );
 
   useEffect(() => {
     if (editableEmployee) {
@@ -255,36 +276,31 @@ const EmployeeList = () => {
   
 
   const handleDelete = async (id) => {
-    // Open the confirmation dialog
     setEmployeeToDelete(id);
     setConfirmDialogOpen(true);
   };
+
 
   const confirmDelete = async () => {
     try {
       setLoading(true);
 
-      // Delete the employee with the specified ID
       await deleteDoc(doc(firestore, 'employees', employeeToDelete));
 
-      // After successful deletion, refresh the employee list
       fetchEmployees();
 
       console.log(`Employee with ID ${employeeToDelete} deleted successfully`);
 
-      // Show snackbar alert
       setSnackbarMessage('Employee deleted successfully');
       setSnackbarOpen(true);
 
     } catch (error) {
       console.error('Error deleting employee:', error);
     } finally {
-      // Close the confirmation dialog
       setConfirmDialogOpen(false);
       setLoading(false);
     }
   };
-
 
   const handleCreate = () => {
     setOpenDialog(true);
@@ -296,6 +312,7 @@ const EmployeeList = () => {
 
   const handleCreateEmployee = async () => {
     try {
+
       setLoading(true);
 
       const newEmployee = {
@@ -313,27 +330,14 @@ const EmployeeList = () => {
 
       setLoading(false);
       setOpenDialog(false);
-      setFormData({
-        name: '',
-        surname: '',
-        email: '',
-        birthDate: '',
-        employeeNumber: '',
-        salary: '',
-        role: '',
-        manager: '',
-      });
-
-
+      clearForm();
 
       console.log('Employee created with ID:', employeeRef.id);
 
-      // Show success message (you can use a Snackbar or other UI element)
       console.log('Employee created successfully');
       setSnackbarMessage('Employee created successfully');
       setSnackbarOpen(true);
 
-      // Refresh employee list
       fetchEmployees();
     } catch (error) {
       console.error('Error creating employee:', error);
@@ -365,7 +369,7 @@ const EmployeeList = () => {
 
   const handleSearch = (e) => {
     const value = e.target.value;
-    setSearchQuery(value);
+    debouncedSearch(value);
   };
 
   const handleFilterRole = useCallback((e) => setFilterRole(e.target.value), []);
@@ -381,6 +385,11 @@ const EmployeeList = () => {
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
     setSnackbarMessage('');
+  };
+
+  const handleCancel = () => {
+    setEditDialogOpen(false);
+    clearForm();
   };
 
 
@@ -405,7 +414,7 @@ const EmployeeList = () => {
 
 
         <Box mt={2} display="flex" justifyContent="space-between">
-        <TextField label="Search" variant="outlined" size="small" value={searchQuery} onChange={handleSearch} />
+        <TextField label="Search" variant="outlined" size="small" onChange={handleSearch} />
         <TextField label="Filter by Role" variant="outlined" size="small" value={filterRole} onChange={handleFilterRole} />
       
         <Button onClick={() => handleSortColumn('name')}>
@@ -551,7 +560,7 @@ const EmployeeList = () => {
             </FormContainer>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => handleCancel()}>Cancel</Button>
             <Button color="primary" onClick={handleEditEmployee} disabled={loading}>
               {loading ? <CircularProgress size={20} /> : 'Save'}
             </Button>
