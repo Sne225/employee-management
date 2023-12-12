@@ -77,7 +77,7 @@ const SideNavigation = () => {
             // Close the dialog after a delay (e.g., 2 seconds)
             setTimeout(() => setLogoutDialogOpen(false), 2000);
             // Redirect to the home page after signing out after the delay
-            setTimeout(() => navigate('/login'), 2000);
+            setTimeout(() => navigate('/'), 2000);
         } catch (error) {
             console.error('Error signing out:', error);
         }
