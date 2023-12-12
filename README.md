@@ -1,13 +1,13 @@
 # Employee Management System
 
-This sytem is designed to manage employees within a given organisation. Every action is data-driven and has a materialistic look and feel.
+This sytem is designed to manage employees within a given organisation. Every action is data-driven and the app has a materialistic look and feel.
 
 # Tools Used
 For the project, these are the following tools used:
 - React
 - Firebase
 - Node.js
-- Visual Studio Code
+- Visual Studio Codeh
 - Expo CLI (and Expo Packages)
 - Git (Version Control)
 - Bootstrap
