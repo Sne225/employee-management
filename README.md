@@ -7,7 +7,7 @@ For the project, these are the following tools used:
 - React
 - Firebase
 - Node.js
-- Visual Studio Codeh
+- Visual Studio Code
 - Expo CLI (and Expo Packages)
 - Git (Version Control)
 - Bootstrap / CSS / HTML
