@@ -10,7 +10,7 @@ For the project, these are the following tools used:
 - Visual Studio Codeh
 - Expo CLI (and Expo Packages)
 - Git (Version Control)
-- Bootstrap / CSS
+- Bootstrap / CSS / HTML
 - MUI API
 
 # Features
