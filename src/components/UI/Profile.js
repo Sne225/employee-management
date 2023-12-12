@@ -42,6 +42,10 @@ const Profile = () => {
         getUserData();
     }, []);
 
+    if (loading) {
+        return <div className='spinner'></div>;
+      }
+
     return (
         <div className="profile">
                 <div className="profile-info">

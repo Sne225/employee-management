@@ -4,6 +4,11 @@ import SideNavigation from "../components/UI/SideNavigation";
 import team from "../assets/teams.jpg"
 
 const Home = () => {
+  const [loading, setLoading] = useState(true);
+
+  if (loading) {
+    return <div className='spinner mt-5'></div>;
+  }
 
   return (
     <Fragment>

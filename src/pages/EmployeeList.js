@@ -1,7 +1,5 @@
-// src/components/EmployeeList.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
-  Grid,
   Button,
   Dialog,
   DialogTitle,
@@ -14,12 +12,26 @@ import {
   ListItemText,
   Card,
   Box,
+  MenuItem,
+  Table,
+  TableContainer,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Paper,
+  CircularProgress, Alert, Snackbar
 } from '@mui/material';
 import { styled } from '@mui/system';
-import EmployeeCard from '../components/UI/EmployeeCard';
-import SideNavigation from '../components/UI/SideNavigation';
-import { getDocs, collection } from 'firebase/firestore';
-import { firestore } from '../firebase'; // assuming you've exported your initialized firestore instance as 'db'
+import { createTheme } from '@mui/material/styles';
+import { getDocs, collection, addDoc, query, where, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { firestore } from '../firebase';
+import SideNavigation from "../components/UI/SideNavigation";
+import ClearFiltersButton from '../components/UI/ClearFiltersButton';
+
+
+
+const theme = createTheme();
 
 const RootContainer = styled('div')({
   padding: (theme) => theme.spacing(2),
@@ -34,32 +46,245 @@ const CreateButton = styled(Button)({
   marginBottom: (theme) => theme.spacing(2),
 });
 
+const FormContainer = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+});
+
+const LoadingContainer = styled(Box)({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  height: '100vh',
+});
+
+
+const EmployeeCard = ({ employee, onClose }) => {
+  return (
+    <Dialog open={true} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle variant="h6" style={{ textAlign: 'center', marginBottom: theme.spacing(2) }}>
+        Employee Details
+      </DialogTitle>
+      <DialogContent>
+        <FormContainer>
+          <List>
+            <ListItem>
+              <ListItemText
+                primary={<Typography variant="subtitle1">Name</Typography>}
+                secondary={`${employee.name} ${employee.surname}`}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary={<Typography variant="subtitle1">Email</Typography>}
+                secondary={employee.email}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary={<Typography variant="subtitle1">Employee Number</Typography>}
+                secondary={employee.employeeNumber}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary={<Typography variant="subtitle1">Salary</Typography>}
+                secondary={employee.salary}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary={<Typography variant="subtitle1">Role</Typography>}
+                secondary={employee.role}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary={<Typography variant="subtitle1">Reporting Manager</Typography>}
+                secondary={employee.manager}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary={<Typography variant="subtitle1">Birth Date</Typography>}
+                secondary={employee.birthDate}
+              />
+            </ListItem>
+          </List>
+        </FormContainer>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Close</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    surname: '',
+    email: '',
+    birthDate: '',
+    employeeNumber: '',
+    salary: '',
+    role: '',
+    manager: '',
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterRole, setFilterRole] = useState('');
+  const [sortColumn, setSortColumn] = useState('');
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState(null);
+  const [clearFilters, setClearFilters] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editableEmployee, setEditableEmployee] = useState(null);
+
+
+
+  const handleViewEmployee = (employee) => {
+    setSelectedEmployees([employee]);
+  };
+
+  const handleViewEmployeeClose = () => {
+    setSelectedEmployees([]);
+  };
+
 
   useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const employeesCollection = collection(firestore, 'employees');
-        const employeesSnapshot = await getDocs(employeesCollection);
-        const employeeData = employeesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setEmployees(employeeData);
-      } catch (error) {
-        console.error('Error fetching employees:', error);
-      }
-    };
-
     fetchEmployees();
-  }, []);
+  }, [searchQuery, filterRole, sortColumn, sortDirection, clearFilters]);
 
-  const handleEdit = (id) => {
-    console.log(`Edit employee with ID: ${id}`);
+  const fetchEmployees = async () => {
+    try {
+      setLoading(true);
+
+      const employeesCollection = collection(firestore, 'employees');
+      let employeesQuery = query(employeesCollection);
+
+      if (searchQuery) {
+        employeesQuery = query(employeesCollection, where('name', '>=', searchQuery));
+      }
+
+      if (filterRole) {
+        employeesQuery = query(employeesCollection, where('role', '==', filterRole));
+      }
+
+      if (sortColumn) {
+        employeesQuery = query(employeesCollection, orderBy(sortColumn, sortDirection));
+      }
+
+      const employeesSnapshot = await getDocs(employeesQuery);
+      const employeeData = employeesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setEmployees(employeeData);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.error('Error fetching employees:', error);
+    }
   };
 
-  const handleDelete = (id) => {
-    console.log(`Delete employee with ID: ${id}`);
+  const handleClearFilters = () => {
+    setClearFilters(!clearFilters);
+    setSearchQuery('');
+    setFilterRole('');
+    setSortColumn('');
+    setSortDirection('asc');
   };
+  
+  const handleEdit = (employee) => {
+    setEditableEmployee(employee);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditEmployee = async () => {
+    try {
+      setLoading(true);
+  
+      // Update the employee with the edited data
+      await updateDoc(doc(firestore, 'employees', editableEmployee.id), {
+        name: formData.name,
+        surname: formData.surname,
+        email: formData.email,
+        birthDate: formData.birthDate,
+        employeeNumber: formData.employeeNumber,
+        salary: formData.salary,
+        role: formData.role,
+        manager: formData.manager,
+      });
+  
+      // After successful update, refresh the employee list
+      fetchEmployees();
+  
+      // Show snackbar alert
+      setSnackbarMessage('Employee updated successfully');
+      setSnackbarOpen(true);
+  
+    } catch (error) {
+      console.error('Error updating employee:', error);
+    } finally {
+      // Close the edit dialog
+      setEditDialogOpen(false);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (editableEmployee) {
+      setFormData({
+        name: editableEmployee.name || '',
+        surname: editableEmployee.surname || '',
+        email: editableEmployee.email || '',
+        birthDate: editableEmployee.birthDate || '',
+        employeeNumber: editableEmployee.employeeNumber || '',
+        salary: editableEmployee.salary || '',
+        role: editableEmployee.role || '',
+        manager: editableEmployee.manager || '',
+      });
+    }
+  }, [editableEmployee]);
+  
+
+  const handleDelete = async (id) => {
+    // Open the confirmation dialog
+    setEmployeeToDelete(id);
+    setConfirmDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      setLoading(true);
+
+      // Delete the employee with the specified ID
+      await deleteDoc(doc(firestore, 'employees', employeeToDelete));
+
+      // After successful deletion, refresh the employee list
+      fetchEmployees();
+
+      console.log(`Employee with ID ${employeeToDelete} deleted successfully`);
+
+      // Show snackbar alert
+      setSnackbarMessage('Employee deleted successfully');
+      setSnackbarOpen(true);
+
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+    } finally {
+      // Close the confirmation dialog
+      setConfirmDialogOpen(false);
+      setLoading(false);
+    }
+  };
+
 
   const handleCreate = () => {
     setOpenDialog(true);
@@ -69,60 +294,288 @@ const EmployeeList = () => {
     setOpenDialog(false);
   };
 
-  const handleCreateEmployee = () => {
-    // Add logic to create a new employee
-    // You can access form data here and perform necessary actions
+  const handleCreateEmployee = async () => {
+    try {
+      setLoading(true);
 
-    // After creating the employee, you may want to refetch the employee list
-    // to include the newly created employee
-    // fetchEmployees();
+      const newEmployee = {
+        name: formData.name,
+        surname: formData.surname,
+        email: formData.email,
+        birthDate: formData.birthDate,
+        employeeNumber: formData.employeeNumber,
+        salary: formData.salary,
+        role: formData.role,
+        manager: formData.manager,
+      };
 
-    // Close the dialog
-    setOpenDialog(false);
+      const employeeRef = await addDoc(collection(firestore, 'employees'), newEmployee);
+
+      setLoading(false);
+      setOpenDialog(false);
+      setFormData({
+        name: '',
+        surname: '',
+        email: '',
+        birthDate: '',
+        employeeNumber: '',
+        salary: '',
+        role: '',
+        manager: '',
+      });
+
+
+
+      console.log('Employee created with ID:', employeeRef.id);
+
+      // Show success message (you can use a Snackbar or other UI element)
+      console.log('Employee created successfully');
+      setSnackbarMessage('Employee created successfully');
+      setSnackbarOpen(true);
+
+      // Refresh employee list
+      fetchEmployees();
+    } catch (error) {
+      console.error('Error creating employee:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const reportingLineManagerOptions = employees.map((employee) => ({
+    value: employee.id,
+    label: `${employee.name} ${employee.surname}`,
+  }));
+
+  const handleInputChange = (field, value) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [field]: value,
+    }));
+  };
+
+  const handleNameChange = useCallback((e) => handleInputChange('name', e.target.value), []);
+  const handleSurnameChange = useCallback((e) => handleInputChange('surname', e.target.value), []);
+  const handleEmailChange = useCallback((e) => handleInputChange('email', e.target.value), []);
+  const handleBirthDateChange = useCallback((e) => handleInputChange('birthDate', e.target.value), []);
+  const handleEmployeeNumberChange = useCallback((e) => handleInputChange('employeeNumber', e.target.value), []);
+  const handleSalaryChange = useCallback((e) => handleInputChange('salary', e.target.value), []);
+  const handleRoleChange = useCallback((e) => handleInputChange('role', e.target.value), []);
+  const handleManagerChange = useCallback((e) => handleInputChange('manager', e.target.value), []);
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+  };
+
+  const handleFilterRole = useCallback((e) => setFilterRole(e.target.value), []);
+  const handleSortColumn = useCallback((column) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  }, [sortColumn, sortDirection]);
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+    setSnackbarMessage('');
+  };
+
+
   return (
-    <RootContainer>
+    <>
       <SideNavigation />
-      <Card className="welcome-card">
-        <Box p={4}>
-          <Typography variant="h4" textAlign="center">
-            Employee Portal
-          </Typography>
-          <Typography textAlign="center" mt={2}>
-            Employee List
-          </Typography>
-        </Box>
-      </Card>
-      <CreateButton variant="contained" color="primary" onClick={handleCreate}>
-        Create
-      </CreateButton>
+      <RootContainer>
+        <Card className="welcome-card">
+          <Box p={1}>
+            <Typography variant="h4" textAlign="center">
+              Employee Portal
+            </Typography>
+            {/* <Typography textAlign="center" mt={2}>
+              Employee List
+            </Typography> */}
+            <CreateButton variant="contained" color="primary" onClick={handleCreate}>
+              Create Employee
+            </CreateButton>
 
-      <List>
-        {employees.map((employee) => (
-          <ListItem key={employee.id}>
-            <ListItemText primary={`${employee.name} - ${employee.email}`} />
-            <Button onClick={() => handleEdit(employee.id)}>Edit</Button>
-            <Button onClick={() => handleDelete(employee.id)}>Delete</Button>
-          </ListItem>
-        ))}
-      </List>
+          </Box>
+        </Card>
 
-      {/* Dialog for Create */}
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Create Employee</DialogTitle>
-        <DialogContent>
-          {/* Add your form or input fields for creating a new employee */}
-          {/* Example: <TextField label="First Name" fullWidth /> */}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button color="primary" onClick={handleCreateEmployee}>
-            Create
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </RootContainer>
+
+        <Box mt={2} display="flex" justifyContent="space-between">
+        <TextField label="Search" variant="outlined" size="small" value={searchQuery} onChange={handleSearch} />
+        <TextField label="Filter by Role" variant="outlined" size="small" value={filterRole} onChange={handleFilterRole} />
+      
+        <Button onClick={() => handleSortColumn('name')}>
+          Sort by Name {sortColumn === 'name' && (sortDirection === 'asc' ? '▲' : '▼')}
+        </Button>
+        <Button onClick={() => handleSortColumn('role')}>
+          Sort by Role {sortColumn === 'role' && (sortDirection === 'asc' ? '▲' : '▼')}
+        </Button>
+        <ClearFiltersButton onClick={handleClearFilters}>
+          Clear Filters
+        </ClearFiltersButton>
+      </Box>
+
+        {loading ? (
+          <LoadingContainer>
+            <CircularProgress />
+          </LoadingContainer>
+        ) : (
+          <>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Role</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {employees.map((employee) => (
+                    <TableRow key={employee.id}>
+                      <TableCell>{`${employee.name} ${employee.surname}`}</TableCell>
+                      <TableCell>{employee.role}</TableCell>
+                      <TableCell>{employee.email}</TableCell>
+                      <TableCell>
+                      
+                        <Button onClick={() => handleViewEmployee(employee)}>View</Button>
+                        <Button onClick={() => handleEdit(employee)}>Edit</Button>
+                        <Button onClick={() => handleDelete(employee.id)}>Delete</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {selectedEmployees.length === 1 && (
+              <EmployeeCard employee={selectedEmployees[0]} onClose={handleViewEmployeeClose} />
+            )}
+          </>
+        )}
+
+        
+
+        <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
+          <DialogTitle variant="h6" style={{ textAlign: 'center', marginBottom: theme.spacing(2) }}>
+            Create Employee
+          </DialogTitle>
+          <DialogContent>
+            <FormContainer>
+              <TextField label="Name" fullWidth value={formData.name} onChange={handleNameChange} />
+              <TextField label="Surname" fullWidth value={formData.surname} onChange={handleSurnameChange} />
+              <TextField label="Email" fullWidth value={formData.email} onChange={handleEmailChange} />
+              <TextField label="Birth Date" fullWidth type="date" value={formData.birthDate} onChange={handleBirthDateChange} />
+              <TextField label="Employee Number" fullWidth value={formData.employeeNumber} onChange={handleEmployeeNumberChange} />
+              <TextField label="Salary" fullWidth value={formData.salary} onChange={handleSalaryChange} />
+              <TextField label="Role/Position" fullWidth value={formData.role} onChange={handleRoleChange} />
+              <TextField
+                select
+                label="Reporting Line Manager"
+                fullWidth
+                value={formData.manager}
+                onChange={handleManagerChange}
+                SelectProps={{
+                  native: false,
+                }}
+              >
+                <MenuItem value="" disabled>
+                  Select Line Manager
+                </MenuItem>
+                {reportingLineManagerOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </FormContainer>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog}>Cancel</Button>
+            <Button color="primary" onClick={handleCreateEmployee} disabled={loading}>
+              {loading ? <CircularProgress size={20} /> : 'Create'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+          <DialogTitle>Confirm Delete</DialogTitle>
+          <DialogContent>
+            Are you sure you want to delete this employee?
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
+            <Button onClick={confirmDelete} color="error">
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {editableEmployee && (
+        <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
+          <DialogTitle variant="h6" style={{ textAlign: 'center', marginBottom: theme.spacing(2) }}>
+            Edit Employee
+          </DialogTitle>
+          <DialogContent>
+            <FormContainer>
+              <TextField label="Name" fullWidth value={formData.name} onChange={handleNameChange} />
+              <TextField label="Surname" fullWidth value={formData.surname} onChange={handleSurnameChange} />
+              <TextField label="Email" fullWidth value={formData.email} onChange={handleEmailChange} />
+              <TextField label="Birth Date" fullWidth type="date" value={formData.birthDate} onChange={handleBirthDateChange} />
+              <TextField label="Employee Number" fullWidth value={formData.employeeNumber} onChange={handleEmployeeNumberChange} />
+              <TextField label="Salary" fullWidth value={formData.salary} onChange={handleSalaryChange} />
+              <TextField label="Role/Position" fullWidth value={formData.role} onChange={handleRoleChange} />
+              <TextField
+                select
+                label="Reporting Line Manager"
+                fullWidth
+                value={formData.manager}
+                onChange={handleManagerChange}
+                SelectProps={{
+                  native: false,
+                }}
+              >
+                <MenuItem value="" disabled>
+                  Select Line Manager
+                </MenuItem>
+                {reportingLineManagerOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </FormContainer>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button color="primary" onClick={handleEditEmployee} disabled={loading}>
+              {loading ? <CircularProgress size={20} /> : 'Save'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
+        <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleSnackbarClose}>
+          <Alert
+            onClose={handleSnackbarClose}
+            severity="success"
+            sx={{
+              width: '100%',
+              backgroundColor: '#4CAF50',
+              color: '#ffffff',  
+            }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+      </RootContainer>
+
+
+    </>
   );
 };
 

@@ -18,4 +18,10 @@
     display: inline-block;
     /* Adjust as needed */
   }
+
+  .mid {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   
