@@ -38,7 +38,7 @@ const PrivateRoute = ({ element }) => {
 };
 
 const routes = [
-  { path: '/', element: <App /> },
+  { path: 'login', element: <App /> },
   { path: 'signup', element: <SignUp /> },
   { path: 'home', element: <PrivateRoute element={<Home />} /> },
   { path: 'list', element: <PrivateRoute element={<List />} /> },
