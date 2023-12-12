@@ -10,15 +10,14 @@ import {
     ListItemIcon,
     ListItemText,
     IconButton,
-    Avatar,
     Divider,
     Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert
 } from '@mui/material';
-import { FaHome, FaUsers, FaBell, FaChartBar, FaCog, FaBars, FaTimes, FaUserEdit, FaSignOutAlt, FaAdn, FaBacon, FaCodeBranch } from 'react-icons/fa';
+import { FaHome, FaUsers, FaBell, FaChartBar, FaCog, FaBars, FaTimes, FaUserEdit, FaSignOutAlt, FaCodeBranch } from 'react-icons/fa';
 import Profile from './Profile';
 import './Nav.css';
 import { useNavigate } from 'react-router-dom';
-import { auth, firestore } from '../../firebase';
+import { auth } from '../../firebase';
 import logo from '../../assets/images/logo.webp';
 import '../../App.css'
 
@@ -36,7 +35,6 @@ const SideNavigation = () => {
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(true);
     const location = useLocation();
-    const [loading, setLoading] = useState(true);
     const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FaGoogle, FaFacebook } from 'react-icons/fa'; // Import Google and Facebook icons
 import './App.css';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from './firebase';
 import { Link } from 'react-router-dom'; // Import Link from React Router
 import bodyImage from './assets/images/backs.jpg';
@@ -47,7 +47,7 @@ function Login() {
 
   return (
     <div className="container mt-5">
-    <img src={bodyImage} alt="Background Image" className="body-image" />
+    <img src={bodyImage} alt="Background Image" className="Background Image" />
 
       <div className="card p-5">
         <h3 className="mb-1">Employee Login</h3>

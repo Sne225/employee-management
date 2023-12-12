@@ -37,11 +37,6 @@ const RootContainer = styled('div')({
   padding: (theme) => theme.spacing(2),
 });
 
-const Title = styled(Typography)({
-  textAlign: 'center',
-  margin: (theme) => theme.spacing(2),
-});
-
 const CreateButton = styled(Button)({
   marginBottom: (theme) => theme.spacing(2),
 });
