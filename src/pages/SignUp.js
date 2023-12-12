@@ -122,7 +122,7 @@ function CreateAccount() {
 
   return (
     <div className="account-container">
-    <img src={bodyImage} alt="Background Image" className="body-image" />
+    <img src={bodyImage} alt="Background Wall" className="body-image" />
       
       <div className="card p-4">
       {/* <h3>Create Account</h3 >  */}

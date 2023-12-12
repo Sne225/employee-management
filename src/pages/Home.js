@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment } from "react";
 import { Card, Typography, Box } from "@mui/material";
 import SideNavigation from "../components/UI/SideNavigation";
 import team from "../assets/teams.jpg"
