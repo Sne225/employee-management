@@ -21,5 +21,6 @@ The application has the following features:
 
 
 # Access it live
+![image](https://github.com/Sne225/employee-management/assets/64343614/565b19a9-d3e2-4b5d-a03b-177cde73fa0e)
 
 You can view the live application  [here](https://employeemanagement-29998.web.app/) and do some playing around.
