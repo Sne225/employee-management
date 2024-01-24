@@ -7,7 +7,6 @@ For the project, these are the following tools used:
 - React
 - Firebase
 - Node.js
-- Visual Studio Code
 - Git (Version Control)
 - Bootstrap / CSS / HTML
 - MUI and Gravatar API
